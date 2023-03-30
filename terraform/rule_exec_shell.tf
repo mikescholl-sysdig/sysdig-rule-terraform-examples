@@ -1,5 +1,5 @@
 resource "sysdig_secure_rule_falco" "exec_shell" {
-  name        = "exec_shell_${data.external.branch.result.branch}" // ID
+  name        = data.external.branch.result.branch != "main" ? "exec_shell_${data.external.branch.result.branch}" : "exec_shell" // ID
   description = "A shell was used as the entrypoint/exec point into a container with an attached terminal."
   tags        = ["container", "shell", "mitre_execution"]
 
