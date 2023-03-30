@@ -1,18 +1,51 @@
-
 tf_docker: &tf-docker
   image: "${TERRAFORM_IMAGE}"
-  entrypoint: /bin/ash
+  entrypoint: /bin/bash
+
 steps:
-  - label: ":terraform: Init"
+  - label: ":terraform: Init && Plan"
+    plugins:
+      - docker#v5.6.0:
+          <<: *tf-docker
+          image: "${TERRAFORM_IMAGE}"
+          mount-checkout: true
+          propagate-environment: true
+          entrypoint: /bin/ash
+          command:
+            - -e
+            - -c
+            - |
+              cd terraform && terraform init
+              terraform plan
+
+
+  - label: ":terraform: Apply"
+    artifact_paths: "terraform/rules/*"
+    plugins:
+      - docker#v5.6.0:
+          <<: *tf-docker
+          image: "${TERRAFORM_IMAGE}"
+          mount-checkout: true
+          propagate-environment: true
+          entrypoint: /bin/ash
+          command:
+            - -e
+            - -c
+            - |
+              cd terraform && terraform init
+              terraform apply --auto-approve
+
+  - label: ":terraform: Destroy"
     plugins:
     - docker#v5.6.0:
         <<: *tf-docker
-        image: "hashicorp/terraform:1.4.2"
+        image: "${TERRAFORM_IMAGE}"
         mount-checkout: true
+        propagate-environment: true
         entrypoint: /bin/ash
         command:
           - -e
           - -c
           - |
             cd terraform && terraform init
-            terraform plan
+            terraform apply -destroy --auto-approve

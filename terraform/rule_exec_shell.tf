@@ -1,5 +1,5 @@
 resource "sysdig_secure_rule_falco" "exec_shell" {
-  name        = data.external.branch.result.branch != "main" ? "exec_shell_${data.external.branch.result.branch}" : "exec_shell" // ID
+  name        = local.branch_name != "main" ? "exec_shell_${local.branch_name}" : "exec_shell" // ID
   description = "A shell was used as the entrypoint/exec point into a container with an attached terminal."
   tags        = ["container", "shell", "mitre_execution"]
 
@@ -19,8 +19,8 @@ resource "sysdig_secure_rule_falco" "exec_shell" {
 }
 
 data "template_file" "exec_shell" {
-  count = data.external.branch.result.branch != "main" ? 0 : 1
-  template = "${file("${path.module}/templates/rule.yaml.tpl")}"
+  count = local.branch_name != "main" ? 1 : 0
+  template = file("${path.module}/templates/rule.yaml.tpl")
   vars = {
     rule_name = sysdig_secure_rule_falco.exec_shell.name
     rule_condition = sysdig_secure_rule_falco.exec_shell.condition
@@ -32,7 +32,7 @@ data "template_file" "exec_shell" {
 }
 
 resource "local_file" "exec_shell" {
-  count = data.external.branch.result.branch != "main" ? 0 : 1
-  filename = "${sysdig_secure_rule_falco.exec_shell.name}.yaml"
+  count = local.branch_name != "main" ? 1 : 0
+  filename = "rules/${sysdig_secure_rule_falco.exec_shell.name}.yaml"
   content = data.template_file.exec_shell[0].rendered
 }
