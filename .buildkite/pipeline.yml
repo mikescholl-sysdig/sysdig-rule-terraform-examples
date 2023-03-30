@@ -1,5 +1,21 @@
+
+tf_docker: &tf-docker
+  image: "${TERRAFORM_IMAGE}"
+  entrypoint: /bin/ash
+  environment:
+    - SYSDIG_SECURE_URL=https://us2.app.sysdig.com
+    - SYSDIG_SECURE_API_TOKEN=0eb4d3b0-af4e-4cac-b0b5-658c62b65270
 steps:
-  - command: "terraform version"
+  - label: ":terraform: Init"
     plugins:
-      - docker#v5.6.0:
-          image: "terraform:1.4.2"
+    - docker#v5.6.0:
+        <<: *tf-docker
+        image: "hashicorp/terraform:1.4.2"
+        mount-checkout: true
+        entrypoint: /bin/ash
+        command:
+          - -e
+          - -c
+          - |
+            cd terraform && terraform init
+            terraform plan
