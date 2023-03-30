@@ -1,4 +1,5 @@
 steps:
-  - command: wget https://releases.hashicorp.com/terraform/1.4.2/terraform_1.4.2_linux_amd64.zip
-  - command: unzip terraform_1.4.2_linux_amd64.zip
-  - command: mv terraform /usr/bin/terraform
+  - command: "terraform version"
+    plugins:
+      - docker#v5.6.0:
+          image: "terraform:1.4.2"
